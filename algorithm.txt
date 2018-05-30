@@ -1,0 +1,57 @@
+VOIDPTR offs_box, offs_first_in_row, offs_curr,	k, i, j, canal, x_f, y_f, x_c, y_c;
+
+*offs_box = *offs_first = *offs_curr = *x_f = *y_f = *x_c = *y_c = 0;
+
+for( *k = *width * *height ; *k ; --*k )
+{
+
+	*offs_first			=	*offs_box; //first in row that is
+	*offs_curr			=	*offs_first;
+	
+	*iter_pxl			=	1; //how many pixels are being checked in each row
+	if( *x_f < *box )
+		*iter_pxl			+=	*x_f;
+	else
+		*iter_pxl			+=	*box;
+	if(*x_f < *width-*box)
+		*iter_pxl	+=	*box;
+	else
+		*iter_pxl	+=	*width-*x_f-1;
+
+	*iter_row := 1;	//how many rows the algorithm goes through in current box
+	if ( *y_f < *box )
+		*iter_row += *y_f;
+	else
+		*iter_row += *box;
+	
+	if (*y_f < *height-*box)
+		*iter_row += *box;
+	else	
+		*iter_row += *height-*y_f-1;
+
+	for(*i= *iter_row ; *i ; --*i)
+	{
+		for(*j = *iter_pxl ; *j ; --*j)
+		{
+			for(int *canal=0 ; *canal < 3 ; ++*canal)
+			{
+				if( *(source+ *offs_curr) > *(first_canal_max-4*canal) ) //assuming max canal values for the box are saved on stack next to each other
+					*(first_canal_max-4*canal) = *(source+ *offs_curr);
+				*offs_curr+=1; //next byte
+			}
+			//offs_curr was already changed so we go automatically to the next pixel
+		}
+		//now we've filtered through the whole row, we shall go on to the next row
+		//we can either go the mul way and say:
+		//offs_curr += 3*(width - *iter_pxl) + *padd
+		
+		
+	}
+}
+
+wyzeruj kanały max na stosie
+wykalkuluj offset
+do rejestru wczytuję wartość kanału spod rej_filt+offset
+porównuję
+jeśli większe
+offset=+1
