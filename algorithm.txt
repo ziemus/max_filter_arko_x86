@@ -1,18 +1,25 @@
-VOIDPTR offs_box, offs_first_in_row, offs_curr,	k, i, j, canal, x_f, y_f, x_c, y_c;
+//to-do changes in the algorithm:
+//exchange offs_fil for incrementing source and destination so that they point to the filtered pixel
+//instead of saving the offset to currently checked pixel and adding it each time we check a channes to source, save the address
+//of currently checked byte (channel) in a register so that its faster to access
+//the following chnages require the use of 3 general-purpose registers 
+//now if we save destination pixel under EDI, filtered pixel under ESI
+ 
+VOIDPTR offs_fil, offs_box, offs_first, offs_curr, i, j, canal, x_f, y_f, x_c, y_c, next_row_B, width_minus_box;
 
-*offs_box = *offs_first = *offs_curr = *x_f = *y_f = *x_c = *y_c = 0;
+*offs_fil = *offs_box = *offs_first = *offs_curr = *x_f = *y_f = *x_c = *y_c = 0;
+*next_row_B = 3* *width + *padd;
 
-for( *k = *width * *height ; *k ; --*k )
+while( *y_f < *width )
 {
-
-	*offs_first			=	*offs_box; //first in row that is
-	*offs_curr			=	*offs_first;
+	*offs_first			=	*offs_box; 		//first in row that is
+	*offs_curr			=	*offs_first;	//currently checked for max value byte
 	
 	*iter_pxl			=	1; //how many pixels are being checked in each row
 	if( *x_f < *box )
-		*iter_pxl			+=	*x_f;
+		*iter_pxl	+=	*x_f;
 	else
-		*iter_pxl			+=	*box;
+		*iter_pxl	+=	*box;
 	if(*x_f < *width-*box)
 		*iter_pxl	+=	*box;
 	else
@@ -33,10 +40,10 @@ for( *k = *width * *height ; *k ; --*k )
 	{
 		for(*j = *iter_pxl ; *j ; --*j)
 		{
-			for(int *canal=0 ; *canal < 3 ; ++*canal)
+			for(*canal=0 ; *canal < 3 ; ++*canal)
 			{
-				if( *(source+ *offs_curr) > *(first_canal_max-4*canal) ) //assuming max canal values for the box are saved on stack next to each other
-					*(first_canal_max-4*canal) = *(source+ *offs_curr);
+				if( *(source+ *offs_curr) > *(*first_canal_max-4**canal) ) //assuming max canal values for the box are saved on stack next to each other
+					*(*first_canal_max - 4* *canal) = *(source + *offs_curr);  //multiplication by 4 is equivalent to shift right by 2 bits and the second way is much faster
 				*offs_curr+=1; //next byte
 			}
 			//offs_curr was already changed so we go automatically to the next pixel
@@ -44,14 +51,36 @@ for( *k = *width * *height ; *k ; --*k )
 		//now we've filtered through the whole row, we shall go on to the next row
 		//we can either go the mul way and say:
 		//offs_curr += 3*(width - *iter_pxl) + *padd
-		
-		
+		//or we can store the value of 3*width+padd on the stack: void* next_line_in_bytes
+		*offs_first += *next_row_B;
+		*offs_curr = *offs_first;
+	}
+	//now the box has been filtered through so we need to
+	//save found max colors under *(dest+*offset_fil)
+	//channel0 to reg, reg to [EDI], edi ++
+	//channel1 to reg, reg to [EDI], EDI ++
+	//channel2 ro reg, reg to [EDI], EDI ++ 
+	//like that we eliminated the need for offs_fill when saved
+	*x_f += 1;
+	*offs_fil += 1;
+	//find new _f and new box coordinates
+	if(*x_f == *width) // end of line - in assebly itll be sth like: if != j to elseif_1 ; j loop_beg
+	{
+		*y_f += 1;
+		*x_f = 0;
+		*offs_fil  += *padd;
+		*offs_box	= *offs_fil;	//always set when beginning to filter the 0th pixel of the next row
+	}
+	else
+	{
+		//*offs_box doesn't change until *x_f == *box+1 
+		//after and including that its value is incremented by 3 in each loop
+		//up until we reach *x_f == *width - *box
+		//after and including that value desn't change
+		//so it only increases by 3 when (*x_f > *box) && ( *x_f < *width - *box )
+		//not to subtrat that each iteration, we may store it on the stack
+		if(*x_f > *box)
+			if( *x_f < *width_minus_box)
+				*offs_box += 3;
 	}
 }
-
-wyzeruj kanały max na stosie
-wykalkuluj offset
-do rejestru wczytuję wartość kanału spod rej_filt+offset
-porównuję
-jeśli większe
-offset=+1
