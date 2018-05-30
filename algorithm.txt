@@ -1,10 +1,13 @@
+//ONLY VALUES IN REGISTERS ARE ADDRESED WITHOUT THE *
+//ALL DATA SAVED ON THE STACK IS ADDRESED LIKE *variable to display the use of ebp + offset addressing as in [EBP+8]
+
 //to-do changes in the algorithm:
 //exchange offs_fil for incrementing source and destination so that they point to the filtered pixel
 //instead of saving the offset to currently checked pixel and adding it each time we check a channes to source, save the address
 //of currently checked byte (channel) in a register so that its faster to access
 //the following chnages require the use of 3 general-purpose registers 
 //now if we save destination pixel under EDI, filtered pixel under ESI
- 
+ //gdyby zamiast offs_curr brać esi i na początu najwyższej pętli inicjować je wartością addr_box, które się zmienia przecież co zapętlenie najwyższej pętli o 3 (lub w ogóle) 
 VOIDPTR offs_fil, offs_box, offs_first, offs_curr, i, j, canal, x_f, y_f, x_c, y_c, next_row_B, width_minus_box;
 
 *offs_fil = *offs_box = *offs_first = *offs_curr = *x_f = *y_f = *x_c = *y_c = 0;
@@ -49,9 +52,6 @@ while( *y_f < *width )
 			//offs_curr was already changed so we go automatically to the next pixel
 		}
 		//now we've filtered through the whole row, we shall go on to the next row
-		//we can either go the mul way and say:
-		//offs_curr += 3*(width - *iter_pxl) + *padd
-		//or we can store the value of 3*width+padd on the stack: void* next_line_in_bytes
 		*offs_first += *next_row_B;
 		*offs_curr = *offs_first;
 	}
@@ -60,7 +60,9 @@ while( *y_f < *width )
 	//channel0 to reg, reg to [EDI], edi ++
 	//channel1 to reg, reg to [EDI], EDI ++
 	//channel2 ro reg, reg to [EDI], EDI ++ 
-	//like that we eliminated the need for offs_fill when saved
+	//like that we eliminated the need for offs_fil when saving
+	//can we eliminate it when filtering?
+	//let's try by saving source+offs_box into 
 	*x_f += 1;
 	*offs_fil += 1;
 	//find new _f and new box coordinates
@@ -70,6 +72,9 @@ while( *y_f < *width )
 		*x_f = 0;
 		*offs_fil  += *padd;
 		*offs_box	= *offs_fil;	//always set when beginning to filter the 0th pixel of the next row
+		//$at this point the box goes to the beginning of the next line only if: *y_f > *box AND *y_f < *height - *box
+		//$else it goes to the beginning of the current line WHICH IS WHAT
+		//DO I NEED TO CHANGE THIS? YUPP
 	}
 	else
 	{
@@ -80,7 +85,8 @@ while( *y_f < *width )
 		//so it only increases by 3 when (*x_f > *box) && ( *x_f < *width - *box )
 		//not to subtrat that each iteration, we may store it on the stack
 		if(*x_f > *box)
-			if( *x_f < *width_minus_box)
+			//if( *x_f < *width_minus_box)
 				*offs_box += 3;
+		//WHAT ABOUT THE LAST/FIRST ROWS CAUSE I DODN'T THINK ABOUT THAT
 	}
 }
