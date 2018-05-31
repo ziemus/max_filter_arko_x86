@@ -1,6 +1,6 @@
 //ONLY VALUES IN REGISTERS ARE ADDRESED WITHOUT THE *
 //ALL DATA SAVED ON THE STACK IS ADDRESED LIKE *variable to portray the use of ebp + offset addressing as in [EBP+8]
-TOSTACK addr_box, addr_first, iter_row, iter_pix, i, j, canal, x_f, y_f, next_row_B;
+TOSTACK addr_box, addr_first, iter_row, iter_pix, i, j, channel, x_f, y_f, next_row_B, max_channel;
 
 *x_f = *y_f = 0;
 *next_row_B = 3* *width + *padd;
@@ -46,9 +46,9 @@ while( *y_f != *height )
 			for(*j = *iter_pxl ; *j ; --*j) //j may be stored in memory as its only complared to an immediate value and decremented by 1
 			{
 				//check a pixel == 3B
-				for(*canal=0 ; *canal < 3 ; ++*canal)
+				for(*channel=0 ; *channel < 3 ; ++*channel)
 				{
-					if( *(addr_curr) > *(0*first_canal_max-4**canal) ) //assuming max canal values for the box are saved on stack next to each other
+					if( *(addr_curr) > *(0*channel_max-4**channel) ) //assuming max channel values for the box are saved on stack next to each other
 						*(*first_canal_max - 4* *canal) = *(addr_curr);  //multiplication by 4 is equivalent to shift right by 2 bits and the second way is much faster
 					*addr_curr+=1; //next byte
 				}
@@ -66,7 +66,10 @@ while( *y_f != *height )
 		channel2 ro reg, reg to [EDI], EDI ++ 
 	
 		//like that we eliminated the need for offs_fil when saving
-
+		//reset max channels
+		mov *channel0 ,  0
+		mov *channel0 -4, 0
+		mov *channel0 - 8,0
 		*x_f += 1;
 		if(*x_f > *box)
 			*addr_box += 3;
