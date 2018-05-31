@@ -54,11 +54,11 @@ dest - w EDI (d - destination) siedzi adres piksela, do któego zapisujemy znale
 -------------------------------
 | next_row_B	| EBP-48
 -------------------------------
-| addr_box	?	| EBP-52
+| box_next_row	| EBP-52
 -------------------------------
 | addr_first ?	| EBP-56
 -------------------------------
-|
+| addr_box	?
 -------------------------------
 
 eax	- 
