@@ -97,10 +97,12 @@ while( *y_f != *height )
 	//save 3*(*box + 1) + *padd on the stack to limit muls inside the loop
 	//$var *box_next_row = 3*(*box + 1) + *padd
 	if(*y_f > *box)
-		if( *y_f < *height - *box)
+		*addr_box += *box_next_row
+		/*if( *y_f < *height - *box) //INVALID
 			*addr_box += *box_next_row
 		else
 			*addr_box -= *box_ret_to_row
+		*/
 	else
 		*addr_box -= *box_ret_to_row
 	//itll look better in asssembly - jump to the same place
