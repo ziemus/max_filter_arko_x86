@@ -1,0 +1,94 @@
+//ONLY VALUES IN REGISTERS ARE ADDRESED WITHOUT THE *
+//ALL DATA SAVED ON THE STACK IS ADDRESED LIKE *variable to portray the use of ebp + offset addressing as in [EBP+8]
+TOSTACK addr_box, addr_first, iter_row, iter_pix, i, j, canal, x_f, y_f, next_row_B;
+
+*x_f = *y_f = 0;
+*next_row_B = 3* *width + *padd;
+*box_next_row = 3*(*box + 1) + *padd
+*box_ret_to_row = 3* (*width - *box - 1)
+*addr_box = *input_buff //from the stack
+
+while( *y_f != *height )
+{	
+	//iter_row doesn't need to be changed for each pixel - only for each row filtered - how do we provide that? 
+	*iter_row = 1;	//how many rows the algorithm goes through in current box 
+	if ( *y_f < *box )
+		*iter_row += *y_f;
+	else
+		*iter_row += *box;
+	
+	if (*y_f < *height-*box)
+		*iter_row += *box;
+	else	
+		*iter_row += *height-*y_f-1;
+	
+	//filter through the row
+	while(*x_f!=*width)
+	{
+		//*addr_first			=	*addr_box; 		//first in row that is
+		addr_curr			=	*addr_box;	//currently checked for max value byte
+		*addr_first			=	addr_curr; // the order matters as now we don't need additional registers for that sincecs addrcurr is stored in esi
+		
+		*iter_pxl			=	1; //how many pixels are being checked in each row - THE FILTERED PIXEL - use 2 registers to compute its value and store it
+		if( *x_f < *box )			//ADD PIXELS FROM LEFT
+			*iter_pxl	+=	*x_f;
+		else
+			*iter_pxl	+=	*box;
+		if(*x_f < *width-*box)		//ADD PIXELS FROM RIGHT
+			*iter_pxl	+=	*box;
+		else
+			*iter_pxl	+=	*width-*x_f-1;
+	
+		//filtering loop for the box of filtered pixel (x_f,y_f)
+		for(*i= *iter_row ; *i ; --*i) //i may be stored in memory as its only complared to an immediate value and decremented by 1
+		{
+			//check a row of the box
+			for(*j = *iter_pxl ; *j ; --*j) //j may be stored in memory as its only complared to an immediate value and decremented by 1
+			{
+				//check a pixel == 3B
+				for(*canal=0 ; *canal < 3 ; ++*canal)
+				{
+					if( *(addr_curr) > *(0*first_canal_max-4**canal) ) //assuming max canal values for the box are saved on stack next to each other
+						*(*first_canal_max - 4* *canal) = *(addr_curr);  //multiplication by 4 is equivalent to shift right by 2 bits and the second way is much faster
+					*addr_curr+=1; //next byte
+				}
+				//addr_curr was already changed so we go automatically to the next pixel
+			}
+			//now we've filtered through the whole row, we shall go on to the next row
+			*addr_first += *next_row_B;
+			addr_curr = *addr_first;
+		}
+		//now the box has been filtered through so we need to
+		//save found max colors under *(dest+*offset_fil)
+	
+		channel0 to reg, reg to [EDI], edi ++ which is destination byte
+		channel1 to reg, reg to [EDI], EDI ++
+		channel2 ro reg, reg to [EDI], EDI ++ 
+	
+		//like that we eliminated the need for offs_fil when saving
+
+		*x_f += 1;
+		if(*x_f > *box)
+			*addr_box += 3;
+	}
+	EDI+=*padd; //we need to leave out the padding
+	*y_f += 1;
+	*x_f = 0;
+	//at this point the box goes to the beginning of the next line only if: *y_f > *box AND *y_f < *height - *box
+	//then: *addr_box += 3*(*box + 1) + *padd
+	//save 3*(*box + 1) + *padd on the stack to limit muls inside the loop
+	//$var *box_next_row = 3*(*box + 1) + *padd
+	if(*y_f > *box)
+		if( *y_f < *height - *box)
+			*addr_box += *box_next_row
+		else
+			*addr_box -= *box_ret_to_row
+	else
+		*addr_box -= *box_ret_to_row
+	//itll look better in asssembly - jump to the same place
+	
+	//else it goes to the beginning of the current line WHICH IS WHAT 
+	//which is *addr_box -= 3* (*width - *box - 1)
+	//that could be saved onto stack in order to limit the number of multiplies to minimum
+	//var *box_ret_to_row = 3* (*width - *box - 1)
+}
