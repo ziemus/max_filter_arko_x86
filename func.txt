@@ -2,52 +2,6 @@ section .text
 
 global filter_x86
 global _filter_x86
-;  -------------------------------
-;  | int pad                     | EBP+28
-;  -------------------------------
-;  | int height                  | EBP+24
-;  -------------------------------
-;  | int width                   | EBP+20
-;  -------------------------------
-;  | int box			         | EBP+16
-;  -------------------------------
-;  | void* output				 | EBP+12
-;  -------------------------------
-;  | void* input			     | EBP+8
-;  -------------------------------
-;  | ret address                 | EBP+4
-;  -------------------------------
-;  | saved ebp                   | EBP
-;  -------------------------------
-;  | x_f						 | EBP-4
-;  -------------------------------
-;  | y_f		                 | EBP-8
-;  -------------------------------
-;  | x min   	                 | EBP-12
-;  -------------------------------
-;  | y min      	             | EBP-16
-;  -------------------------------
-;  | x max                       | EBP-20
-;  -------------------------------
-;  | y max                       | EBP-24
-;  -------------------------------
-;  | x cur             		     | EBP-28
-;  -------------------------------
-;  | y cur                  	 | EBP-32
-;  -------------------------------
-;  | max B                  	 | EBP-36
-;  -------------------------------
-;  | max G                  	 | EBP-40
-;  -------------------------------
-;  | max R                  	 | EBP-44
-;  -------------------------------
-;
-;  	eax	- 
-;	ebx - 
-;	ecx	- 
-;	edx	-
-;	esi	- input buffer address
-;	edi	- output buffer address
 
 filter_x86:
 _filter_x86:
@@ -62,66 +16,7 @@ init_var:
 	cmp		eax,	11
 	add		eax,	l
 	jl		init_var
-set_y_min:
-	mov		eax,	[ebp-8]
-	sub		eax,	[ebp+16]
-	cmp		eax,	0
-	jle		set_y_max
-	mov		eax,	0
-set_y_max:
-	mov		ebx,	[ebp-8]
-	add		ebx,	[ebp+16]
-	cmp		ebx,	[ebp+24]			;;if >=height set to width-1
-	jg		save_ys
-	mov		ebx,	[ebp+24]
-	sub		ebx,	1
-;just in case more registers are needed
-save_ys:
-	mov		[ebp-16],	eax
-	mov		[ebp-24],	ebx
-set_x_min:	
-	mov		ecx,	[ebp-4]
-	sub		ecx,	[ebp+16]
-	cmp		ecx,	0
-	jle		set_x_max
-	mov		ecx,	0
-set_x_max:
-	mov		edx,	[ebp-8]
-	add		edx,	[ebp+16]
-	cmp		edx,	[ebp+20]			;if >=width set to width-1
-	jg		save_xs
-	mov		edx,	[ebp+20]
-	sub		edx,	1
-;just in case more registers are needed
-save_xs:
-	mov		[ebp-12],	ecx
-	mov		[ebp-20],	edx
-init_y:
-	mov		eax,		[ebp-16]		;maybe we'll need eax later on
-	mov		[ebp-32],	eax				;y_curr set to y min
-	init_X:
-	;lets try not to change ecx contents
-		mov		[ebp-28],	ecx				;x_curr set to x min
-		;well need a register for comparisons, since all of our minmaxes are saved on the stack
-	find_pix:
-		;now lets think - the address of our input buffer
-		;is saved under the address ebp+8, which means that each time we want to
-		;access the buffer, we need to first get its address and then address its contents so its best
-		;to either set a register to its address or create a variable storing the address of the buffer
-		;let's try the first case
-		;output - edi, input- esi
-		;for each filtered pixel for each line in the box we need to find a starting point
-		;esi+3*(y_curr+x_curr)+padd == 
-	
-		;first find our pixel - calculate offset from the start of the buffer
-		;offset = y*(3+padd)+ 3x
-		;read its 1st canal, save under [ebp-36]; 2nd [ebp-40], 3rd [ebp-44]
-		mov		ebx,	[ebp+28]	;ebx:=padd
-		add		ebx,	3			;+3
-		mul		ebx,	[ebp-32]	;eax:=ebx*y_curr
-		mov		ebx,	eax			;
-		mov		eax,	[ebp]
-		
+
 ;quitting
 	mov		eax,	0
 quit:	

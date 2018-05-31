@@ -1,46 +1,69 @@
-;  -------------------------------
-;  | int pad                     | EBP+28
-;  -------------------------------
-;  | int height                  | EBP+24
-;  -------------------------------
-;  | int width                   | EBP+20
-;  -------------------------------
-;  | int box			         | EBP+16
-;  -------------------------------
-;  | void* output				 | EBP+12
-;  -------------------------------
-;  | void* input			     | EBP+8
-;  -------------------------------
-;  | ret address                 | EBP+4
-;  -------------------------------
-;  | saved ebp                   | EBP
-;  -------------------------------
-;  | x_f						 | EBP-4
-;  -------------------------------
-;  | y_f		                 | EBP-8
-;  -------------------------------
-;  | x min   	                 | EBP-12
-;  -------------------------------
-;  | y min      	             | EBP-16
-;  -------------------------------
-;  | x max                       | EBP-20
-;  -------------------------------
-;  | y max                       | EBP-24
-;  -------------------------------
-;  | x cur             		     | EBP-28
-;  -------------------------------
-;  | y cur                  	 | EBP-32
-;  -------------------------------
-;  | max B                  	 | EBP-36
-;  -------------------------------
-;  | max G                  	 | EBP-40
-;  -------------------------------
-;  | max R                  	 | EBP-44
-;  -------------------------------
-;
-;  	eax	- 
-;	ebx - 
-;	ecx	- 
-;	edx	-
-;	esi	-
-;	edi	-
+>addr_box - adres pierwszego piksela (bajtu) w oknie
+>addr_first - adres pierwszego piksela w rozpatrywanym dla okna rzędzie,
+>iter_row - przez ile linijek przechodzimy w oknie,
+>iter_pix  - przez ile pikseli w każdej linijce okna,
+>i, j, channel- iteratory
+>x_f, y_f, - współrzędne filtrowanego piksela (tego od którego liczymy okno)
+
+>next_row_B - ile bajtów zajmuje linijka
+>box_ret_to_row - odejmujemy tyle bajtów od adresu okna, kiedy przechodzimy do filtrowania piksela z następnej linijki pliku (cofamy go na początek aktualnie przefiltrowanej linijki)
+>box_next_row - tylke batów dodajemy, żeby początek okna znalazł się w początku następnej linijki (przy granicznych linijkach)
+>max_channel 0, 1, 2 - wartość pierwszego z kanałów (są ofc 3 takie na stosie obok siebie)
+
+addr_curr - adres aktualnie sprawdzanego kanału (bajtu) w oknie, siedzi pod rejestrem ESI,jak source
+dest - w EDI (d - destination) siedzi adres piksela, do któego zapisujemy znalezione w oknie kolory max
+
+-------------------------------
+| int pad		| EBP+28
+-------------------------------
+| int height	| EBP+24
+-------------------------------
+| int width		| EBP+20
+-------------------------------
+| int box		| EBP+16
+-------------------------------
+| void* output	| EBP+12
+-------------------------------
+| void* input	| EBP+8
+-------------------------------
+| ret address	| EBP+4
+-------------------------------
+| saved ebp		| EBP
+-------------------------------
+| max channel0	| EBP-4
+-------------------------------
+| max channel1	| EBP-8
+-------------------------------
+| max channel2	| EBP-12
+-------------------------------
+| i				| EBP-16
+-------------------------------
+| j				| EBP-20
+-------------------------------
+| channel		| EBP-24
+-------------------------------
+| iter_row		| EBP-28
+-------------------------------
+| iter_pix		| EBP-32
+-------------------------------
+| x_f			| EBP-36
+-------------------------------
+| y_f			| EBP-40
+-------------------------------
+| box_ret_to_row| EBP-44
+-------------------------------
+| next_row_B	| EBP-48
+-------------------------------
+| addr_box	?	| EBP-52
+-------------------------------
+| addr_first ?	| EBP-56
+-------------------------------
+|
+-------------------------------
+
+eax	- 
+ebx - 
+ecx	- addr_box ?
+edx	- addr_first ?
+esi	- addr_curr - adres aktualnie sprawdzanego kanału (bajtu) w oknie, siedzi pod rejestrem ESI,jak source
+edi - w EDI (d - destination) siedzi adres piksela, do któego zapisujemy znalezione w oknie kolory max
