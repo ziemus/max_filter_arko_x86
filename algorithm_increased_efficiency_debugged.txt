@@ -1,6 +1,6 @@
 //ONLY VALUES IN REGISTERS ARE ADDRESED WITHOUT THE *
 //ALL DATA SAVED ON THE STACK IS ADDRESED LIKE *variable to portray the use of ebp + offset addressing as in [EBP+8]
-TOSTACK addr_box, addr_first, iter_row, iter_pix, i, j, channel, x_f, y_f, next_row_B, max_channel;
+TOSTACK addr_box, addr_first, iter_row, iter_pix, i, j, channel, x_f, y_f, next_row_B, max_channel0, max_channel1, max_channel2;
 
 *x_f = *y_f = 0;
 *next_row_B = 3* *width + *padd;
@@ -48,7 +48,7 @@ while( *y_f != *height )
 				//check a pixel == 3B
 				for(*channel=0 ; *channel < 3 ; ++*channel)
 				{
-					if( *(addr_curr) > *(0*channel_max-4**channel) ) //assuming max channel values for the box are saved on stack next to each other
+					if( *(addr_curr) > *(*channel_max-4**channel) ) //assuming max channel values for the box are saved on stack next to each other
 						*(*first_canal_max - 4* *canal) = *(addr_curr);  //multiplication by 4 is equivalent to shift right by 2 bits and the second way is much faster
 					*addr_curr+=1; //next byte
 				}
@@ -61,9 +61,9 @@ while( *y_f != *height )
 		//now the box has been filtered through so we need to
 		//save found max colors under *(dest+*offset_fil)
 	
-		channel0 to reg, reg to [EDI], edi ++ which is destination byte
-		channel1 to reg, reg to [EDI], EDI ++
-		channel2 ro reg, reg to [EDI], EDI ++ 
+		maxchannel0 to reg, reg to [EDI], edi ++ which is destination byte
+		maxchannel1 to reg, reg to [EDI], EDI ++
+		maxchannel2 ro reg, reg to [EDI], EDI ++ 
 	
 		//like that we eliminated the need for offs_fil when saving
 		//reset max channels
