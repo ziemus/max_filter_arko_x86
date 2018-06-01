@@ -4,9 +4,9 @@ TOSTACK addr_box, addr_first, iter_row, iter_pix, i, j, channel, x_f, y_f, next_
 
 *x_f = *y_f = 0;
 *next_row_B = 3* *width + *padd;
-*box_next_row = 3*(*box + 1) + *padd
-*box_ret_to_row = 3* (*width - *box - 1)
-*addr_box = *input_buff //from the stack
+*box_next_row = 3*(*box ) + *padd;	// no +1
+*box_ret_to_row = 3* (*width - *box );	// no -1
+*addr_box = *input_buff 		//from the stack
 
 while( *y_f != *height )
 {	
