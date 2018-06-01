@@ -1,21 +1,6 @@
->addr_box - adres pierwszego piksela (bajtu) w oknie
->addr_first - adres pierwszego piksela w rozpatrywanym dla okna rzędzie,
->iter_row - przez ile linijek przechodzimy w oknie,
->iter_pix  - przez ile pikseli w każdej linijce okna,
->i, j, channel- iteratory
->x_f, y_f, - współrzędne filtrowanego piksela (tego od którego liczymy okno)
-
->next_row_B - ile bajtów zajmuje linijka
->box_ret_to_row - odejmujemy tyle bajtów od adresu okna, kiedy przechodzimy do filtrowania piksela z następnej linijki pliku (cofamy go na początek aktualnie przefiltrowanej linijki)
->box_next_row - tylke batów dodajemy, żeby początek okna znalazł się w początku następnej linijki (przy granicznych linijkach)
->max_channel 0, 1, 2 - wartość pierwszego z kanałów (są ofc 3 takie na stosie obok siebie)
-
-addr_curr - adres aktualnie sprawdzanego kanału (bajtu) w oknie, siedzi pod rejestrem ESI,jak source
-dest - w EDI (d - destination) siedzi adres piksela, do któego zapisujemy znalezione w oknie kolory max
-
 //ONLY VALUES IN REGISTERS ARE ADDRESED WITHOUT THE *
 //ALL DATA SAVED ON THE STACK IS ADDRESED LIKE *variable to portray the use of ebp + offset addressing as in [EBP+8]
-TOSTACK addr_box, addr_first, iter_row, iter_pix, i, j, channel, x_f, y_f, next_row_B, max_channel0, max_channel1, max_channel2;
+TOSTACK addr_box, addr_first, iter_row, iter_pix, i, j, channel, x_f, y_f, next_row_B, max_channel;
 
 *x_f = *y_f = 0;
 *next_row_B = 3* *width + *padd;
@@ -63,7 +48,7 @@ while( *y_f != *height )
 				//check a pixel == 3B
 				for(*channel=0 ; *channel < 3 ; ++*channel)
 				{
-					if( *(addr_curr) > *(*channel_max-4**channel) ) //assuming max channel values for the box are saved on stack next to each other
+					if( *(addr_curr) > *(0*channel_max-4**channel) ) //assuming max channel values for the box are saved on stack next to each other
 						*(*first_canal_max - 4* *canal) = *(addr_curr);  //multiplication by 4 is equivalent to shift right by 2 bits and the second way is much faster
 					*addr_curr+=1; //next byte
 				}
@@ -76,9 +61,9 @@ while( *y_f != *height )
 		//now the box has been filtered through so we need to
 		//save found max colors under *(dest+*offset_fil)
 	
-		maxchannel0 to reg, reg to [EDI], edi ++ which is destination byte
-		maxchannel1 to reg, reg to [EDI], EDI ++
-		maxchannel2 ro reg, reg to [EDI], EDI ++ 
+		channel0 to reg, reg to [EDI], edi ++ which is destination byte
+		channel1 to reg, reg to [EDI], EDI ++
+		channel2 ro reg, reg to [EDI], EDI ++ 
 	
 		//like that we eliminated the need for offs_fil when saving
 		//reset max channels
@@ -97,12 +82,10 @@ while( *y_f != *height )
 	//save 3*(*box + 1) + *padd on the stack to limit muls inside the loop
 	//$var *box_next_row = 3*(*box + 1) + *padd
 	if(*y_f > *box)
-		*addr_box += *box_next_row
-		/*if( *y_f < *height - *box) //INVALID
+		if( *y_f < *height - *box)
 			*addr_box += *box_next_row
 		else
 			*addr_box -= *box_ret_to_row
-		*/
 	else
 		*addr_box -= *box_ret_to_row
 	//itll look better in asssembly - jump to the same place
