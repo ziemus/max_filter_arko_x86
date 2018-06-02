@@ -14,11 +14,11 @@
 -------------------------------
 | saved ebp		| EBP
 -------------------------------
-| max channel0	| EBP-13
+| max channel0	| EBP-4
 -------------------------------
-| max channel1	| EBP-14
+| max channel1	| EBP-8
 -------------------------------
-| max channel2	| EBP-15
+| max channel2	| EBP-12
 -------------------------------
 | i				| EBP-16
 -------------------------------
@@ -45,26 +45,3 @@
 | addr_box	ebp-60
 -------------------------------
 | height-box ebp-64
-
-
-;init while_channel
-					;mov 	ecx,	2
-					;while_channel:
-					;	mov		ebx,	ecx
-					;	shl		ebx,	2
-					;	mov		eax,	[esi]
-					;	push edx
-					;	sub edx,ebx
-					;	cmp		eax,	[edx]
-					;	pop edx  
-					;	jle	lessorequalcolor
-					;	push edx
-					;	sub edx,ebx
-					;	mov	[edx],	eax
-					;	pop edx
-					;	lessorequalcolor:
-					;	add		esi,	1
-					;	;while_channel loop condition
-					;	sub		ecx,	1
-					;	cmp 	ecx,	0
-					;	jge	while_channel
