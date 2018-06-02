@@ -30,18 +30,34 @@ int main(int argc, char**argv) //argc==3, *argv[2] = box size, *argv[1] = file d
 	int32_t width, height, padd, box;
 	size_t filesize;
 
-	if(argc != 3) {printf("Za malo argumentow!!!\n"); exit(1);}
-
-	SDL_Init(SDL_INIT_VIDEO);
+	if(argc != 3)
+    {
+        printf("Too few arguments.\n");
+        exit(1);
+    }
+	//get box size
+	box = atoi(argv[2]);
+	if(box < 0)
+    {
+        printf("Invlid box size.\n");
+        exit(1);
+    }
 
 	img = fopen(argv[1],"rb");
+	if(img == NULL)
+    {
+        printf("Invalid box size.\n");
+        exit(1);
+    }
+
+
+    //load all data onto the buffer and then read data from the RAM
 	//read width
 	fseek(img, 18, SEEK_SET);
+
 	fread(&width, 4, 1, img);
 	//read height
 	fread(&height, 4, 1, img);
-	//get box size
-	box = atoi(argv[2]);
 	//calculate pwindadding
 	padd = width % 4;
 	//alloc buffers of *img size
@@ -56,21 +72,19 @@ int main(int argc, char**argv) //argc==3, *argv[2] = box size, *argv[1] = file d
 	fclose(img);
 	//copy the bmp header to the output buffer
 	memcpy(out_buf, in_buf, 54);
-
 	//now that we have our buffers ready all we got to do is call the assembler function
 	filter_x86(in_buf+54, out_buf+54, box, width, height, padd);
-
 	//now to display the output buffer
+	SDL_Init(SDL_INIT_VIDEO);
 	surf = get_image_from_buf(out_buf, filesize);
 	wind = SDL_CreateWindow("MaxFiter", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     screen = SDL_GetWindowSurface(wind);
     SDL_BlitSurface(surf, NULL, screen, NULL);
-    SDL_FreeSurface(surf);
     SDL_UpdateWindowSurface(wind);
-
 
 	while(getch() != 'q');
 
+	SDL_FreeSurface(surf);
 	SDL_FreeSurface(screen);
 	SDL_DestroyWindow(wind);
 	free(in_buf);

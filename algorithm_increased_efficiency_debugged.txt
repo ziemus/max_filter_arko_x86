@@ -4,9 +4,9 @@ TOSTACK addr_box, addr_first, iter_row, iter_pix, i, j, channel, x_f, y_f, next_
 
 *x_f = *y_f = 0;
 *next_row_B = 3* *width + *padd;
-*box_next_row = 3*(*box ) + *padd;	// no +1
-*box_ret_to_row = 3* (*width - *box );	// no -1
-*addr_box = *input_buff 		//from the stack
+*box_next_row = 3*(*box) + *padd;
+*box_ret_to_row = 3* (*width - *box);
+*addr_box = *input_buff; //from the stack
 
 while( *y_f != *height )
 {	
@@ -82,10 +82,7 @@ while( *y_f != *height )
 	//save 3*(*box + 1) + *padd on the stack to limit muls inside the loop
 	//$var *box_next_row = 3*(*box + 1) + *padd
 	if(*y_f > *box)
-		if( *y_f < *height - *box)
-			*addr_box += *box_next_row
-		else
-			*addr_box -= *box_ret_to_row
+		*addr_box += *box_next_row
 	else
 		*addr_box -= *box_ret_to_row
 	//itll look better in asssembly - jump to the same place

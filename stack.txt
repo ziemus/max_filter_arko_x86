@@ -1,19 +1,3 @@
->addr_box - adres pierwszego piksela (bajtu) w oknie
->addr_first - adres pierwszego piksela w rozpatrywanym dla okna rzędzie,
->iter_row - przez ile linijek przechodzimy w oknie,
->iter_pix  - przez ile pikseli w każdej linijce okna,
->i, j, channel- iteratory
->x_f, y_f, - współrzędne filtrowanego piksela (tego od którego liczymy okno)
-
->next_row_B - ile bajtów zajmuje linijka
->box_ret_to_row - odejmujemy tyle bajtów od adresu okna, kiedy przechodzimy do filtrowania piksela z następnej linijki pliku (cofamy go na początek aktualnie przefiltrowanej linijki)
->box_next_row - tylke batów dodajemy, żeby początek okna znalazł się w początku następnej linijki (przy granicznych linijkach)
->max_channel 0, 1, 2 - wartość pierwszego z kanałów (są ofc 3 takie na stosie obok siebie)
-
-addr_curr - adres aktualnie sprawdzanego kanału (bajtu) w oknie, siedzi pod rejestrem ESI,jak source
-dest - w EDI (d - destination) siedzi adres piksela, do któego zapisujemy znalezione w oknie kolory max
-
--------------------------------
 | int pad		| EBP+28
 -------------------------------
 | int height	| EBP+24
@@ -30,17 +14,17 @@ dest - w EDI (d - destination) siedzi adres piksela, do któego zapisujemy znale
 -------------------------------
 | saved ebp		| EBP
 -------------------------------
-| max channel0	| EBP-4
+| max channel0	| EBP-13
 -------------------------------
-| max channel1	| EBP-8
+| max channel1	| EBP-14
 -------------------------------
-| max channel2	| EBP-12
+| max channel2	| EBP-15
 -------------------------------
 | i				| EBP-16
 -------------------------------
 | j				| EBP-20
 -------------------------------
-| channel		| EBP-24
+| width-box		| EBP-24
 -------------------------------
 | iter_row		| EBP-28
 -------------------------------
@@ -62,9 +46,25 @@ dest - w EDI (d - destination) siedzi adres piksela, do któego zapisujemy znale
 -------------------------------
 | height-box ebp-64
 
-eax	- 
-ebx - 
-ecx	- addr_box ?
-edx	- addr_first ?
-esi	- addr_curr - adres aktualnie sprawdzanego kanału (bajtu) w oknie, siedzi pod rejestrem ESI,jak source
-edi - w EDI (d - destination) siedzi adres piksela, do któego zapisujemy znalezione w oknie kolory max
+
+;init while_channel
+					;mov 	ecx,	2
+					;while_channel:
+					;	mov		ebx,	ecx
+					;	shl		ebx,	2
+					;	mov		eax,	[esi]
+					;	push edx
+					;	sub edx,ebx
+					;	cmp		eax,	[edx]
+					;	pop edx  
+					;	jle	lessorequalcolor
+					;	push edx
+					;	sub edx,ebx
+					;	mov	[edx],	eax
+					;	pop edx
+					;	lessorequalcolor:
+					;	add		esi,	1
+					;	;while_channel loop condition
+					;	sub		ecx,	1
+					;	cmp 	ecx,	0
+					;	jge	while_channel
