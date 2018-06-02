@@ -1,6 +1,5 @@
 CC=gcc
 ASM=nasm
-ARCH?=32
 RESULT=result
 
 ifeq ($(OS),Windows_NT)
@@ -11,13 +10,9 @@ RM_CMD=rm
 RM_RES=$(RESULT)
 endif
 
-ifeq ($(ARCH),64)
-CFLAGS=
-AFLAGS=-f elf64
-else
+LFLAGS=-lmingw32 -lSDL2main -lSDL2 -lSDL2_image
 CFLAGS=-m32
 AFLAGS=-f elf32
-endif
 
 
 all:result
@@ -27,7 +22,7 @@ main.o: main.c
 func.o: func.asm
 	$(ASM) $(AFLAGS) func.asm -o func.o
 result: main.o func.o
-	$(CC) $(CFLAGS) main.o func.o -o $(RESULT)
+	$(CC) $(CFLAGS) main.o func.o -o $(RESULT) $(LFLAGS)
 	$(RM_CMD) *.o
 clean: 
 	$(RM_CMD) *.o

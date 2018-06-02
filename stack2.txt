@@ -1,0 +1,71 @@
+| int pad		| EBP+28
+-------------------------------
+| int height	| EBP+24
+-------------------------------
+| int width		| EBP+20
+-------------------------------
+| int box		| EBP+16
+-------------------------------
+| void* output	| EBP+12
+-------------------------------
+| void* input	| EBP+8
+-------------------------------
+| ret address	| EBP+4
+-------------------------------
+| saved ebp		| EBP
+-------------------------------
+| max channel0	| EBP-13
+-------------------------------
+| max channel1	| EBP-14
+-------------------------------
+| max channel2	| EBP-15
+-------------------------------
+| i				| EBP-16
+-------------------------------
+| j				| EBP-20
+-------------------------------
+| width-box		| EBP-24
+-------------------------------
+| iter_row		| EBP-28
+-------------------------------
+| iter_pix		| EBP-32
+-------------------------------
+| x_f			| EBP-36
+-------------------------------
+| y_f			| EBP-40
+-------------------------------
+| box_ret_to_row| EBP-44
+-------------------------------
+| next_row_B	| EBP-48
+-------------------------------
+| box_next_row	| EBP-52
+-------------------------------
+| addr_first 	| EBP-56
+-------------------------------
+| addr_box	ebp-60
+-------------------------------
+| height-box ebp-64
+ebp-68
+
+
+;init while_channel
+					;mov 	ecx,	2
+					;while_channel:
+					;	mov		ebx,	ecx
+					;	shl		ebx,	2
+					;	mov		eax,	[esi]
+					;	push edx
+					;	sub edx,ebx
+					;	cmp		eax,	[edx]
+					;	pop edx  
+					;	jle	lessorequalcolor
+					;	push edx
+					;	sub edx,ebx
+					;	mov	[edx],	eax
+					;	pop edx
+					;	lessorequalcolor:
+					;	add		esi,	1
+					;	;while_channel loop condition
+					;	sub		ecx,	1
+					;	cmp 	ecx,	0
+					;	jge	while_channel
